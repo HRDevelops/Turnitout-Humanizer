@@ -22,6 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let isDeskMode = false;
   let isTransitioning = false;
+  let isCanvasInitialized = false;
 
   function showDeskMode(instant = false) {
     if (isDeskMode || isTransitioning) return;
@@ -127,15 +128,19 @@ document.addEventListener("DOMContentLoaded", () => {
   function toggleGlobalTheme() {
     document.body.classList.toggle("dark-mode");
     const isDark = document.body.classList.contains("dark-mode");
-    localStorage.setItem("turnitout_theme", isDark ? "dark" : "light");
+    try {
+      localStorage.setItem("turnitout_theme", isDark ? "dark" : "light");
+    } catch (e) {}
     updateThemeUI(isDark);
   }
 
-  const savedTheme = localStorage.getItem("turnitout_theme");
-  if (savedTheme === "dark") {
-    document.body.classList.add("dark-mode");
-    updateThemeUI(true);
-  }
+  try {
+    const savedTheme = localStorage.getItem("turnitout_theme");
+    if (savedTheme === "dark") {
+      document.body.classList.add("dark-mode");
+      updateThemeUI(true);
+    }
+  } catch (e) {}
 
   if (themeToggleBtn) themeToggleBtn.addEventListener("click", toggleGlobalTheme);
   if (hudThemeToggleBtn) hudThemeToggleBtn.addEventListener("click", toggleGlobalTheme);
@@ -321,21 +326,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (!textToCopy) return;
 
-      navigator.clipboard.writeText(textToCopy).then(() => {
+      const onCopySuccess = () => {
         const originalHtml = copyBtn.innerHTML;
         copyBtn.innerHTML = `Copied Clean Text! ${CHECK_SVG}`;
         setTimeout(() => {
           copyBtn.innerHTML = originalHtml;
         }, 2000);
-      });
+      };
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(textToCopy).then(onCopySuccess).catch(() => {
+          fallbackCopy(textToCopy, copyBtn);
+        });
+      } else {
+        fallbackCopy(textToCopy, copyBtn);
+      }
     });
   }
 
   // ==========================================================================
   // 4. SPATIAL ACADEMIC DESK CANVAS ENGINE
   // ==========================================================================
-  let isCanvasInitialized = false;
-
   function initSpatialDeskCanvas() {
     if (isCanvasInitialized) return;
     isCanvasInitialized = true;
@@ -569,13 +580,16 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
 
   function getRandomClusterNode() {
-    const totalWeight = CLUSTER_NODES.reduce((acc, n) => acc + n.weight, 0);
+    if (!CLUSTER_NODES || !CLUSTER_NODES.length) return "https://turnitout.streamlit.app/";
+    const totalWeight = CLUSTER_NODES.reduce((acc, n) => acc + (n.weight > 0 ? n.weight : 0), 0);
+    if (totalWeight <= 0) return CLUSTER_NODES[0].url;
     let rand = Math.random() * totalWeight;
     for (let i = 0; i < CLUSTER_NODES.length; i++) {
-      if (rand < CLUSTER_NODES[i].weight) {
+      const w = CLUSTER_NODES[i].weight > 0 ? CLUSTER_NODES[i].weight : 0;
+      if (rand < w) {
         return CLUSTER_NODES[i].url;
       }
-      rand -= CLUSTER_NODES[i].weight;
+      rand -= w;
     }
     return CLUSTER_NODES[0].url;
   }
