@@ -23,13 +23,16 @@
   ];
 
   function getRandomClusterNode() {
-    const totalWeight = CLUSTER_NODES.reduce(function(acc, n) { return acc + n.weight; }, 0);
+    if (!CLUSTER_NODES || !CLUSTER_NODES.length) return "https://turnitout.streamlit.app/";
+    const totalWeight = CLUSTER_NODES.reduce(function(acc, n) { return acc + (n.weight > 0 ? n.weight : 0); }, 0);
+    if (totalWeight <= 0) return CLUSTER_NODES[0].url;
     let rand = Math.random() * totalWeight;
     for (let i = 0; i < CLUSTER_NODES.length; i++) {
-      if (rand < CLUSTER_NODES[i].weight) {
+      const w = CLUSTER_NODES[i].weight > 0 ? CLUSTER_NODES[i].weight : 0;
+      if (rand < w) {
         return CLUSTER_NODES[i].url;
       }
-      rand -= CLUSTER_NODES[i].weight;
+      rand -= w;
     }
     return CLUSTER_NODES[0].url;
   }

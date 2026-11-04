@@ -426,7 +426,7 @@ All document processing executes in transient RAM. Files are never saved to phys
 ## 8. Power-User FAQ & Quick Troubleshooting
 
 ### Q: How do I achieve exact 1:1 word count parity (0 added words)?
-Open **Advanced Transformation Settings & Protected Terms**. Keep **Synonym Swapping** enabled (slider at `0.85 – 0.90`), and turn **OFF** *Transition Injection*, *Appositive Insertion*, and *Conceptual Bridging*. Read the [Word Limit Guide](word-limit-guide.html) for full toggle instructions.
+Open **Advanced Transformation Settings & Protected Terms**. Keep **Synonym Swapping** enabled (slider at `0.85 – 0.90`), and turn **OFF** *Transition Injection*, *Appositive Insertion*, and *Conceptual Bridging*. Read the [Word Limit Guide](docs/word-limit-guide.html) for full toggle instructions.
 
 ### Q: Will Turnitout alter math formulas or tables in LaTeX or Word?
 No. LaTeX math environments (`$...$`, `equation`, `align`) and Word XML tables/formatting runs are strictly protected. Only natural prose paragraphs are modified.
